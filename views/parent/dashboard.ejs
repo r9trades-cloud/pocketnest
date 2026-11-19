@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header', { user: user, family: family, notifications: notifications }) %>
+  <main class="dashboard-page parent-dashboard">
+    <div class="dashboard-container">
+      <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+          <a href="/parent/dashboard" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a href="/parent/transactions" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>Transactions</span>
+          </a>
+          <a href="/parent/notifications" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Notifications</span>
+          </a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <% if (messages && messages.length > 0) { %>
+          <% messages.forEach(function(msg) { %>
+            <div class="alert alert-<%= msg.type %> toast">
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <% if (msg.type === 'success') { %>
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                <% } else if (msg.type === 'error') { %>
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                <% } else { %>
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                <% } %>
+              </svg>
+              <span><%= msg.text %></span>
+              <button class="alert-close">&times;</button>
+            </div>
+          <% }); %>
+        <% } %>
+
+        <% if (!family) { %>
+          <!-- No Family State -->
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h2>Create Your Family</h2>
+            <p>Start by creating a family group to manage your children's pocket money.</p>
+            <form method="POST" action="/parent/family/create" class="empty-form">
+              <div class="input-wrapper">
+                <input type="text" name="familyName" placeholder="Family Name (e.g., Sharma Family)" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Create Family</button>
+            </form>
+          </div>
+        <% } else { %>
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <article class="stat-card">
+              <div class="stat-icon total-balance">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Family Balance</span>
+                <span class="stat-value">₹<%= stats.totalBalance.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+              </div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon total-children">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Children</span>
+                <span class="stat-value"><%= stats.totalChildren %></span>
+              </div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon total-distributed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Distributed</span>
+                <span class="stat-value">₹<%= stats.totalDistributed.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+              </div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon total-withdrawals">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12V7H5V7M3 12h18M7 17h10M12 7v10"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Withdrawals</span>
+                <span class="stat-value">₹<%= stats.totalWithdrawals.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+              </div>
+            </article>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="section-header">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <button class="action-btn" data-modal="addMoneyModal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>Add Money</span>
+            </button>
+            <button class="action-btn" data-modal="deductMoneyModal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>Deduct Money</span>
+            </button>
+            <a href="/parent/transactions" class="action-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>View All Transactions</span>
+            </a>
+            <% if (family) { %>
+            <button class="action-btn" data-modal="invitationModal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>Invitation Code</span>
+            </button>
+            <% } %>
+          </div>
+
+          <!-- Children Section -->
+          <div class="section-header with-action">
+            <h2>Children</h2>
+            <% if (stats.totalChildren > 0) { %>
+              <button class="btn btn-primary btn-sm" data-modal="addMoneyModal">Add Money</button>
+            <% } %>
+          </div>
+
+          <% if (stats.children && stats.children.length > 0) { %>
+            <div class="children-grid">
+              <% stats.children.forEach(function(child) { %>
+                <article class="child-card">
+                  <div class="child-header">
+                    <div class="child-avatar">
+                      <% if (child.avatar) { %>
+                        <img src="<%= child.avatar %>" alt="<%= child.name %>">
+                      <% } else { %>
+                        <span><%= child.name.charAt(0).toUpperCase() %></span>
+                      <% } %>
+                      <% if (child.is_frozen) { %>
+                        <span class="frozen-badge">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="9" width="20" height="6" rx="1"/>
+                            <path d="M10 9V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v4"/>
+                          </svg>
+                        </span>
+                      <% } %>
+                    </div>
+                    <div class="child-info">
+                      <h3><%= child.name %></h3>
+                      <span class="child-balance">₹<%= (child.balance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                    </div>
+                  </div>
+                  <div class="child-details">
+                    <div class="detail">
+                      <span class="detail-label">Limit</span>
+                      <span class="detail-value"><%= child.spending_limit ? '₹' + child.spending_limit.toLocaleString('en-IN') + '/' + 'month' : 'Not set' %></span>
+                    </div>
+                    <div class="detail">
+                      <span class="detail-label">Status</span>
+                      <span class="detail-value <%= child.is_frozen ? 'frozen' : 'active' %>">
+                        <%= child.is_frozen ? 'Frozen' : 'Active' %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="child-actions">
+                    <button class="btn btn-sm btn-primary" data-action="addMoney" data-child-id="<%= child.id %>" data-child-name="<%= child.name %>">Add Money</button>
+                    <button class="btn btn-sm btn-secondary" data-action="deductMoney" data-child-id="<%= child.id %>" data-child-name="<%= child.name %>">Deduct</button>
+                    <button class="btn btn-sm <%= child.is_frozen ? 'btn-secondary' : 'btn-outline' %>" data-action="toggleFreeze" data-child-id="<%= child.id %>">
+                      <%= child.is_frozen ? 'Unfreeze' : 'Freeze' %>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" data-action="setLimit" data-child-id="<%= child.id %>" data-child-name="<%= child.name %>">Set Limit</button>
+                  </div>
+                </article>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="empty-state small">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <h3>No Children Yet</h3>
+              <p>Share your invitation code with your children so they can join the family.</p>
+              <% if (family) { %>
+              <button class="btn btn-primary" data-modal="invitationModal">View Invitation Code</button>
+              <% } %>
+            </div>
+          <% } %>
+
+          <!-- Recent Transactions -->
+          <div class="section-header with-action">
+            <h2>Recent Transactions</h2>
+            <a href="/parent/transactions" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <div class="table-container">
+            <table class="transactions-table">
+              <thead>
+                <tr>
+                  <th>Child</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (stats.recentTransactions && stats.recentTransactions.length > 0) { %>
+                  <% stats.recentTransactions.forEach(function(tx) { %>
+                    <tr>
+                      <td><%= tx.child_name %></td>
+                      <td>
+                        <span class="tx-type tx-<%= tx.type %>"><%= tx.type %></span>
+                      </td>
+                      <td class="<%= tx.type === 'deposit' ? 'income' : 'expense' %>">
+                        <%= tx.type === 'deposit' ? '+' : '-' %>₹<%= tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+                      </td>
+                      <td><%= tx.description %></td>
+                      <td><%= new Date(tx.created_at).toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) %></td>
+                      <td><span class="status status-<%= tx.status %>"><%= tx.status %></span></td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="empty-table">No transactions yet</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="addMoneyModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Add Money to Child's Wallet</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form method="POST" action="/parent/wallet/add" class="modal-form">
+          <div class="form-group">
+            <label>Child</label>
+            <select name="childId" id="addMoneyChildSelect" required>
+              <option value="">Select child</option>
+              <% stats.children.forEach(function(child) { %>
+                <option value="<%= child.id %>"><%= child.name %> (₹<%= (child.balance || 0).toLocaleString('en-IN') %>)</option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="addAmount">Amount (₹)</label>
+            <input type="number" name="amount" id="addAmount" placeholder="0.00" step="0.01" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="addDescription">Description (optional)</label>
+            <input type="text" name="description" id="addDescription" placeholder="e.g., Weekly allowance">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Money</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="deductMoneyModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Deduct Money from Child's Wallet</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form method="POST" action="/parent/wallet/deduct" class="modal-form">
+          <div class="form-group">
+            <label>Child</label>
+            <select name="childId" id="deductMoneyChildSelect" required>
+              <option value="">Select child</option>
+              <% stats.children.forEach(function(child) { %>
+                <option value="<%= child.id %>"><%= child.name %> (₹<%= (child.balance || 0).toLocaleString('en-IN') %>)</option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="deductAmount">Amount (₹)</label>
+            <input type="number" name="amount" id="deductAmount" placeholder="0.00" step="0.01" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="deductDescription">Description (optional)</label>
+            <input type="text" name="description" id="deductDescription" placeholder="e.g., Penalty">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn btn-primary">Deduct Money</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <% if (family) { %>
+    <div class="modal-overlay" id="invitationModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Family Invitation Code</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="invitation-content">
+          <p>Share this code with your children so they can join the family:</p>
+          <div class="invitation-code" id="invitationCode" data-code="<%= family.invitation_code %>"><%= family.invitation_code %></div>
+          <button class="btn btn-secondary btn-full" id="copyInvitationCode">Copy Code</button>
+          <p class="invitation-note">Code: <strong><%= family.invitation_code %></strong> | Family: <strong><%= family.name %></strong></p>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="modal-overlay" id="setLimitModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Set Spending Limit</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form method="POST" action="/parent/wallet/set-limit" class="modal-form">
+          <input type="hidden" name="childId" id="setLimitChildId">
+          <div class="form-group">
+            <label for="limitAmount">Limit Amount (₹)</label>
+            <input type="number" name="limitAmount" id="limitAmount" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="limitPeriod">Period</label>
+            <select name="period" id="limitPeriod" required>
+              <option value="daily">Daily</option>
+              <option value="weekly" selected>Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn btn-primary">Set Limit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>

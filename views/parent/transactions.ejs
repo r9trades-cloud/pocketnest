@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header', { user: user, family: family, notifications: [] }) %>
+  <main class="dashboard-page parent-dashboard">
+    <div class="dashboard-container">
+      <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+          <a href="/parent/dashboard" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a href="/parent/transactions" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>Transactions</span>
+          </a>
+          <a href="/parent/notifications" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Notifications</span>
+          </a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <div class="page-header">
+          <h1>Transaction History</h1>
+          <p>All family transactions at a glance</p>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <select id="typeFilter" class="form-select">
+              <option value="">All Types</option>
+              <option value="deposit">Deposits</option>
+              <option value="withdrawal">Withdrawals</option>
+              <option value="deduction">Deductions</option>
+              <option value="spending">Spending</option>
+              <option value="savings">Savings</option>
+            </select>
+            <select id="childFilter" class="form-select">
+              <option value="">All Children</option>
+              <% if (transactions) { %>
+                <% const children = [...new Set(transactions.map(t => t.child_name))]; %>
+                <% children.forEach(function(child) { %>
+                  <option value="<%= child %>"><%= child %></option>
+                <% }); %>
+              <% } %>
+            </select>
+            <select id="statusFilter" class="form-select">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="transactions-table" id="transactionsTable">
+            <thead>
+              <tr>
+                <th>Child</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (transactions && transactions.length > 0) { %>
+                <% transactions.forEach(function(tx) { %>
+                  <tr data-type="<%= tx.type %>" data-child="<%= tx.child_name %>" data-status="<%= tx.status %>">
+                    <td><%= tx.child_name %></td>
+                    <td>
+                      <span class="tx-type tx-<%= tx.type %>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tx-icon">
+                          <% if (tx.type === 'deposit') { %>
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                          <% } else if (tx.type === 'withdrawal') { %>
+                            <path d="M21 12V7H5V7M3 12h18M7 17h10M12 7v10"/>
+                          <% } else if (tx.type === 'deduction') { %>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                          <% } else if (tx.type === 'savings') { %>
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                          <% } else { %>
+                            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                          <% } %>
+                        </svg>
+                        <%= tx.type.charAt(0).toUpperCase() + tx.type.slice(1) %>
+                      </span>
+                    </td>
+                    <td class="<%= tx.type === 'deposit' ? 'income' : 'expense' %>">
+                      <%= tx.type === 'deposit' ? '+' : '-' %>₹<%= tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+                    </td>
+                    <td><%= tx.description || '-' %></td>
+                    <td><%= new Date(tx.created_at).toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) %></td>
+                    <td><span class="status status-<%= tx.status %>"><%= tx.status.charAt(0).toUpperCase() + tx.status.slice(1) %></span></td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="empty-table">No transactions found</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="pagination">
+          <!-- Pagination will be rendered by JS -->
+        </div>
+      </main>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
