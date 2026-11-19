@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+pocketnest.db
+.DS_Store
+*.sqlite
+*.sqlite3
